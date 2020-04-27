@@ -48,16 +48,16 @@ exports.onRenderBody = function (_ref, pluginOptions) {
   };
 
   return setComponents([/*#__PURE__*/_react.default.createElement("script", {
-    key: "gatsby-plugin-google-gtag-setup",
+    key: "gatsby-plugin-gtag-setup",
     dangerouslySetInnerHTML: {
       __html: getReferrer()
     }
   }), /*#__PURE__*/_react.default.createElement("script", {
-    key: "gatsby-plugin-google-gtag",
+    key: "gatsby-plugin-gtag",
     async: true,
     src: "https://www.googletagmanager.com/gtag/js?id=" + firstTrackingId
   }), /*#__PURE__*/_react.default.createElement("script", {
-    key: "gatsby-plugin-google-gtag-config",
+    key: "gatsby-plugin-gtag-config",
     dangerouslySetInnerHTML: {
       __html: renderHtml()
     }

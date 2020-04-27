@@ -16,7 +16,7 @@
     "babel-preset-gatsby-package": "^0.4.0",
     "cross-env": "^5.2.1"
   },
-  "homepage": "https://github.com/gatsbyjs/gatsby/tree/master/packages/gatsby-plugin-google-gtag#readme",
+  "homepage": "https://github.com/marc-pelland/gatsby-plugin-gtag#readme",
   "keywords": [
     "gatsby",
     "gatsby-plugin",
@@ -30,8 +30,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gatsbyjs/gatsby.git",
-    "directory": "packages/gatsby-plugin-google-gtag"
+    "url": "https://github.com/marc-pelland.git"
   },
   "scripts": {
     "build": "babel src --out-dir . --ignore \"**/__tests__\"",
