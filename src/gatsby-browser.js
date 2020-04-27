@@ -1,26 +1,31 @@
 exports.onRouteUpdate = ({ location }) => {
-  const trackingId = window.GATSBY_GTAG_PLUGIN_GA_TRACKING_ID;
-  const anonymize = window.GATSBY_GTAG_PLUGIN_ANONYMIZE || false;
-
-  if (!trackingId || typeof window.gtag !== `function`) {
-    return;
+  if (process.env.NODE_ENV !== `production` || typeof gtag !== `function`) {
+    return null
   }
 
-  let locationStr = '';
+  const pathIsExcluded =
+    location &&
+    typeof window.excludeGtagPaths !== `undefined` &&
+    window.excludeGtagPaths.some(rx => rx.test(location.pathname))
 
-  if (location) {
-    locationStr = `${location.pathname}${location.search}${
-      location.hash
-    }`;
+  if (pathIsExcluded) return null
+
+  // wrap inside a timeout to make sure react-helmet is done with its changes (https://github.com/gatsbyjs/gatsby/issues/11592)
+  const sendPageView = () => {
+    const pagePath = location
+      ? location.pathname + location.search + location.hash
+      : undefined
+    window.gtag(`event`, `page_view`, { page_path: pagePath })
   }
 
-  let anonymizeObj = {};
-  if (anonymize) {
-    anonymizeObj = { anonymize_ip: true };
+  if (`requestAnimationFrame` in window) {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(sendPageView)
+    })
+  } else {
+    // simulate 2 rAF calls
+    setTimeout(sendPageView, 32)
   }
 
-  window.gtag('config', trackingId, {
-    page_path: locationStr,
-    ...anonymizeObj,
-  });
-};
+  return null
+}

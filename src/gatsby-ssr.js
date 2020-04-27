@@ -1,71 +1,89 @@
-import React from 'react';
-
-const GTAG_SRC = `https://www.googletagmanager.com/gtag/js`;
+import React from "react"
+import { Minimatch } from "minimatch"
 
 exports.onRenderBody = (
   { setHeadComponents, setPostBodyComponents },
   pluginOptions
 ) => {
-  const isPluginEnabled =
-    stringToBool(process.env.GATSBY_GTAG_DEBUG) ||
-    process.env.NODE_ENV === 'production';
+  if (process.env.NODE_ENV !== `production` && process.env.NODE_ENV !== `test`)
+    return null
 
-  if (!pluginOptions.trackingId || !isPluginEnabled) {
-    return null;
+  // Lighthouse recommends pre-connecting to google analytics
+  setHeadComponents([
+    <link
+      rel="preconnect dns-prefetch"
+      key="preconnect-google-analytics"
+      href="https://www.google-analytics.com"
+    />,
+  ])
+
+  const gtagConfig = pluginOptions.gtagConfig || {}
+  const pluginConfig = pluginOptions.pluginConfig || {}
+
+  // Prevent duplicate or excluded pageview events being emitted on initial load of page by the `config` command
+  // https://developers.google.com/analytics/devguides/collection/gtagjs/#disable_pageview_tracking
+
+  gtagConfig.send_page_view = false
+
+  const firstTrackingId =
+    pluginOptions.trackingIds && pluginOptions.trackingIds.length
+      ? pluginOptions.trackingIds[0]
+      : ``
+
+  const excludeGtagPaths = []
+  if (typeof pluginConfig.exclude !== `undefined`) {
+    pluginConfig.exclude.map(exclude => {
+      const mm = new Minimatch(exclude)
+      excludeGtagPaths.push(mm.makeRe())
+    })
   }
 
-  const anonymize = pluginOptions.anonymize || false;
-
-  const gtagScript = (
-    <script
-      async
-      key="gatsby-plugin-gtag-gtag-js"
-      src={`${GTAG_SRC}?id=${pluginOptions.trackingId}`}
-    />
-  );
-
-  const scriptStr = `
-    window.GATSBY_GTAG_PLUGIN_GA_TRACKING_ID = (
-      '${pluginOptions.trackingId}'
-    );
-    window.GATSBY_GTAG_PLUGIN_ANONYMIZE = ${anonymize};
-
-    var options = {
-      send_page_view: false
-    };
-    if (${anonymize}) {
-      options.anonymize_ip = true;
-    }
-
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    window.gtag = gtag;
-    gtag('js', new Date());
-    gtag('config', '${pluginOptions.trackingId}', options);
-  `;
-  const trackScript = (
-    <script
-      key="gatsby-plugin-gtag-inline-script"
-      dangerouslySetInnerHTML={{ __html: scriptStr }}
-    />
-  );
-
-  const setComponents = pluginOptions.head
+  const setComponents = pluginConfig.head
     ? setHeadComponents
-    : setPostBodyComponents;
+    : setPostBodyComponents
 
-  return setComponents([gtagScript, trackScript]);
-};
+  // TODO: remove pluginOptions.respectDNT in the next major release of this plugin.
+  // See issue https://github.com/gatsbyjs/gatsby/issues/11159 for the discussion.
+  const respectDNT = pluginConfig.respectDNT || pluginOptions.respectDNT
 
-function stringToBool(s) {
-  if (!s) {
-    return false;
-  }
+  const renderHtml = () => `
+      ${
+        excludeGtagPaths.length
+          ? `window.excludeGtagPaths=[${excludeGtagPaths.join(`,`)}];`
+          : ``
+      }
+      ${
+        typeof gtagConfig.anonymize_ip !== `undefined` &&
+        gtagConfig.anonymize_ip === true
+          ? `function gaOptout(){document.cookie=disableStr+'=true; expires=Thu, 31 Dec 2099 23:59:59 UTC;path=/',window[disableStr]=!0}var gaProperty='${firstTrackingId}',disableStr='ga-disable-'+gaProperty;document.cookie.indexOf(disableStr+'=true')>-1&&(window[disableStr]=!0);`
+          : ``
+      }
+      if(${
+        respectDNT
+          ? `!(navigator.doNotTrack == "1" || window.doNotTrack == "1")`
+          : `true`
+      }) {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){window.dataLayer && window.dataLayer.push(arguments);}
+        gtag('js', new Date());
+        ${pluginOptions.trackingIds
+          .map(
+            trackingId =>
+              `gtag('config', '${trackingId}', ${JSON.stringify(gtagConfig)});`
+          )
+          .join(``)}
+      }
+      `
 
-  const sNorm = s.trim().toLowerCase();
-  if (!sNorm.length) {
-    return false;
-  }
-
-  return sNorm === 'true' || sNorm === '1';
+  return setComponents([
+    <script
+      key={`gatsby-plugin-google-gtag`}
+      async
+      src={`https://www.googletagmanager.com/gtag/js?id=${firstTrackingId}`}
+    />,
+    <script
+      key={`gatsby-plugin-google-gtag-config`}
+      dangerouslySetInnerHTML={{ __html: renderHtml() }}
+    />,
+  ])
 }
