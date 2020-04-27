@@ -38,7 +38,7 @@ exports.onRenderBody = function (_ref, pluginOptions) {
   var tidsByLocale = pluginOptions.trackingIdsByLocale || [];
 
   var getReferrer = function getReferrer() {
-    return "\n    const referrer = document.referrer;\n    console.log(referrer);\n    const tids = " + pluginOptions.trackingIdsByLocale + ";\n    console.log(tids);\n  ";
+    return "\n    const referrer = document.referrer;\n    console.log(referrer);\n    const tids = " + tidsByLocale + ";\n    console.log(tids);\n  ";
   };
 
   var renderHtml = function renderHtml() {

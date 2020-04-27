@@ -45,12 +45,12 @@ exports.onRenderBody = (
   // TODO: remove pluginOptions.respectDNT in the next major release of this plugin.
   // See issue https://github.com/gatsbyjs/gatsby/issues/11159 for the discussion.
   const respectDNT = pluginConfig.respectDNT || pluginOptions.respectDNT
-  const tidsByLocale = pluginOptions.trackingIdsByLocale || []
+  const tidsByLocale = pluginOptions.trackingIdsByLocale || [];
 
   const getReferrer = () => `
     const referrer = document.referrer;
     console.log(referrer);
-    const tids = ${pluginOptions.trackingIdsByLocale};
+    const tids = ${tidsByLocale};
     console.log(tids);
   `
 
