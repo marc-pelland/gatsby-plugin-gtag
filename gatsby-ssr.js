@@ -38,7 +38,7 @@ exports.onRenderBody = function (_ref, pluginOptions) {
   var tidsByLocale = pluginOptions.trackingIdsByLocale || [];
 
   var getReferrer = function getReferrer() {
-    return "\n    const referrer = document.referrer;\n    console.log(referrer);\n    const tids = " + tidsByLocale + ";\n    console.log(tids);\n  ";
+    return "\n    const referrer = document.referrer;\n    if (referrer !== \"\") {\n      const subdomain = referrer.split(\"/\")[2].split(\".\")[0];\n      console.log(referrer, subdomain);\n      const tids = " + JSON.stringify(tidsByLocale) + ";\n      console.log(tids);\n      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;\n      console.log(referrerLocale);\n    } else {\n      console.log('result for testing');\n      const subdomain = 'http://ca.louisvuitton.com/eng-ca/homepage'.split(\"/\")[2].split(\".\")[0];\n      console.log(referrer, subdomain);\n      const tids = " + JSON.stringify(tidsByLocale) + ";\n      console.log(tids);\n      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;\n      console.log(referrerLocale);\n    }\n  ";
   };
 
   var renderHtml = function renderHtml() {

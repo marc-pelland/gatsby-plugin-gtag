@@ -46,12 +46,25 @@ exports.onRenderBody = (
   // See issue https://github.com/gatsbyjs/gatsby/issues/11159 for the discussion.
   const respectDNT = pluginConfig.respectDNT || pluginOptions.respectDNT
   const tidsByLocale = pluginOptions.trackingIdsByLocale || [];
-
+  
   const getReferrer = () => `
     const referrer = document.referrer;
-    console.log(referrer);
-    const tids = ${tidsByLocale};
-    console.log(tids);
+    if (referrer !== "") {
+      const subdomain = referrer.split("/")[2].split(".")[0];
+      console.log(referrer, subdomain);
+      const tids = ${JSON.stringify(tidsByLocale)};
+      console.log(tids);
+      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;
+      console.log(referrerLocale);
+    } else {
+      console.log('result for testing');
+      const subdomain = 'http://ca.louisvuitton.com/eng-ca/homepage'.split("/")[2].split(".")[0];
+      console.log(referrer, subdomain);
+      const tids = ${JSON.stringify(tidsByLocale)};
+      console.log(tids);
+      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;
+      console.log(referrerLocale);
+    }
   `
 
   const renderHtml = () => `
