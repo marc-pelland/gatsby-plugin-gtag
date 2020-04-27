@@ -45,6 +45,14 @@ exports.onRenderBody = (
   // TODO: remove pluginOptions.respectDNT in the next major release of this plugin.
   // See issue https://github.com/gatsbyjs/gatsby/issues/11159 for the discussion.
   const respectDNT = pluginConfig.respectDNT || pluginOptions.respectDNT
+  const tidsByLocale = pluginOptions.trackingIdsByLocale || []
+
+  const getReferrer = () => `
+    const referrer = document.referrer;
+    console.log(referrer);
+    const tids = ${pluginOptions.trackingIdsByLocale};
+    console.log(tids);
+  `
 
   const renderHtml = () => `
       ${
@@ -76,6 +84,10 @@ exports.onRenderBody = (
       `
 
   return setComponents([
+    <script
+      key={`gatsby-plugin-google-gtag-setup`}
+      dangerouslySetInnerHTML={{ __html: getReferrer() }}
+    />,
     <script
       key={`gatsby-plugin-google-gtag`}
       async
