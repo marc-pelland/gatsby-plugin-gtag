@@ -57,12 +57,43 @@ exports.onRenderBody = (
       console.log(tids);
       window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
     } else {
-      console.log('result for default domain - ${pluginOptions.testDomain}');
-      const subdomain = "${pluginOptions.testDomain}".split("/")[2].split(".")[0];
+      console.log('result for default domain - ${pluginOptions.defaultDomain}');
+      const subdomain = "${pluginOptions.defaultDomain}".split("/")[2].split(".")[0];
       const tids = ${JSON.stringify(tidsByLocale)};
       window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
     }
-  `
+  `;
+
+  const getGtagLoad = () => `
+    console.log('loading script', window.referrerCode);
+    function loadScript(url, callback){
+
+      var script = document.createElement("script")
+      script.type = "text/javascript";
+  
+      if (script.readyState){  //IE
+          script.onreadystatechange = function(){
+              if (script.readyState == "loaded" ||
+                      script.readyState == "complete"){
+                  script.onreadystatechange = null;
+                  callback();
+              }
+          };
+      } else {  //Others
+          script.onload = function(){
+              callback();
+          };
+      }
+  
+      script.src = url;
+      document.getElementsByTagName("head")[0].appendChild(script);
+  }
+
+  loadScript(window.referrerCode, function(){
+    //initialization code
+    console.log('script loaded);
+});
+  `;
 
   const renderHtml = () => `
       ${
@@ -84,12 +115,7 @@ exports.onRenderBody = (
         window.dataLayer = window.dataLayer || [];
         function gtag(){window.dataLayer && window.dataLayer.push(arguments);}
         gtag('js', new Date());
-        ${pluginOptions.trackingIds
-          .map(
-            trackingId =>
-              `gtag('config', '${trackingId}', ${JSON.stringify(gtagConfig)});`
-          )
-          .join(``)}
+        gtag('config', window.referrerCode, ${JSON.stringify(gtagConfig)});
       }
       `
 
@@ -99,10 +125,14 @@ exports.onRenderBody = (
       dangerouslySetInnerHTML={{ __html: getReferrer() }}
     />,
     <script
-      key={`gatsby-plugin-gtag`}
-      async
-      src={`https://www.googletagmanager.com/gtag/js?id=${firstTrackingId}`}
+      key={`gatsby-plugin-gtag-load`}
+      dangerouslySetInnerHTML={{ __html: getGtagLoad() }}
     />,
+    // <script
+    //   key={`gatsby-plugin-gtag`}
+    //   async
+    //   src={`https://www.googletagmanager.com/gtag/js?id=${firstTrackingId}`}
+    // />,
     <script
       key={`gatsby-plugin-gtag-config`}
       dangerouslySetInnerHTML={{ __html: renderHtml() }}
