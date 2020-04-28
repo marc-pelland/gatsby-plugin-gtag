@@ -49,23 +49,23 @@ exports.onRenderBody = (
   
   const getReferrer = () => `
     const referrer = document.referrer;
-    window.referrerCode = "";
+    window.referrer = "";
     if (referrer !== "") {
       const subdomain = referrer.split("/")[2].split(".")[0];
       console.log(referrer, subdomain);
       const tids = ${JSON.stringify(tidsByLocale)};
       console.log(tids);
-      window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
+      window.referrer = tids.filter(locale => locale.subdomain === subdomain)[0];
     } else {
       console.log('result for default domain - ${pluginOptions.defaultDomain}');
       const subdomain = "${pluginOptions.defaultDomain}".split("/")[2].split(".")[0];
       const tids = ${JSON.stringify(tidsByLocale)};
-      window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
+      window.referrer = tids.filter(locale => locale.subdomain === subdomain)[0];
     }
   `;
 
   const getGtagLoad = () => `
-    console.log('loading script', window.referrerCode);
+    console.log('loading script', window.referrer.code);
     function loadScript(url, callback){
 
       var script = document.createElement("script")
@@ -89,7 +89,7 @@ exports.onRenderBody = (
       document.getElementsByTagName("head")[0].appendChild(script);
   }
 
-  loadScript("https://www.googletagmanager.com/gtag/js?id="+window.referrerCode, function(){
+  loadScript("https://www.googletagmanager.com/gtag/js?id="+window.referrer.code, function(){
     //initialization code
     console.log('gtag script loaded');
 });
@@ -115,7 +115,7 @@ exports.onRenderBody = (
         window.dataLayer = window.dataLayer || [];
         function gtag(){window.dataLayer && window.dataLayer.push(arguments);}
         gtag('js', new Date());
-        gtag('config', window.referrerCode, ${JSON.stringify(gtagConfig)});
+        gtag('config', window.referrer.code, ${JSON.stringify(gtagConfig)});
       }
       `
 
