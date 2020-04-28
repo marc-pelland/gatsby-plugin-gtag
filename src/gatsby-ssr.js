@@ -89,9 +89,9 @@ exports.onRenderBody = (
       document.getElementsByTagName("head")[0].appendChild(script);
   }
 
-  loadScript(window.referrerCode, function(){
+  loadScript("https://www.googletagmanager.com/gtag/js?id="+window.referrerCode, function(){
     //initialization code
-    console.log('script loaded');
+    console.log('gtag script loaded');
 });
   `;
 
