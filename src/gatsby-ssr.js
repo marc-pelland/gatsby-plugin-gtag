@@ -49,21 +49,18 @@ exports.onRenderBody = (
   
   const getReferrer = () => `
     const referrer = document.referrer;
+    window.referrerCode = "";
     if (referrer !== "") {
       const subdomain = referrer.split("/")[2].split(".")[0];
       console.log(referrer, subdomain);
       const tids = ${JSON.stringify(tidsByLocale)};
       console.log(tids);
-      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;
-      console.log(referrerLocale);
+      window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
     } else {
-      console.log('result for testing');
-      const subdomain = 'http://ca.louisvuitton.com/eng-ca/homepage'.split("/")[2].split(".")[0];
-      console.log(referrer, subdomain);
+      console.log('result for default domain - ${pluginOptions.testDomain}');
+      const subdomain = "${pluginOptions.testDomain}".split("/")[2].split(".")[0];
       const tids = ${JSON.stringify(tidsByLocale)};
-      console.log(tids);
-      const referrerLocale = tids.filter(locale => locale === subdomain)[0].code;
-      console.log(referrerLocale);
+      window.referrerCode = tids.filter(locale => locale.subdomain === subdomain)[0].code;
     }
   `
 
