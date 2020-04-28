@@ -91,7 +91,7 @@ exports.onRenderBody = (
 
   loadScript(window.referrerCode, function(){
     //initialization code
-    console.log('script loaded);
+    console.log('script loaded');
 });
   `;
 
