@@ -51,7 +51,7 @@ exports.onRenderBody = (
   // get the referrer
     const referrer = document.referrer;
     // get the pathname (en-us, es-es, etc)
-    const pathname = window.location.pathname.split('/').join('');
+    const pathname = (window.location.pathname.split('/').join('') === '') ? 'en-us' : window.location.pathname.split('/').join('');
     // get a list o the tids in the system
     const tids = ${JSON.stringify(tidsByLocale)};
     let subdomain = "${pluginOptions.defaultDomain}".split("/")[2].split(".")[0];
