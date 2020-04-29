@@ -48,20 +48,25 @@ exports.onRenderBody = (
   const tidsByLocale = pluginOptions.trackingIdsByLocale || [];
   
   const getReferrer = () => `
+  // get the referrer
     const referrer = document.referrer;
+    // get the pathname (en-us, es-es, etc)
+    const pathname = window.location.pathname.split('/').join('');
+    // get a list o the tids in the system
+    const tids = ${JSON.stringify(tidsByLocale)};
+    let subdomain = "${pluginOptions.defaultDomain}".split("/")[2].split(".")[0];
     window.referrer = "";
-    if (referrer !== "") {
-      const subdomain = referrer.split("/")[2].split(".")[0];
-      console.log(referrer, subdomain);
-      const tids = ${JSON.stringify(tidsByLocale)};
-      console.log(tids);
+    
+    if (referrer !== "" && (pathname === "en-us" || pathname=== "")) {
+      // adjust the referrer based on the referring country iin canada / us
+      subdomain = referrer.split("/")[2].split(".")[0];
       window.referrer = tids.filter(locale => locale.subdomain === subdomain)[0];
     } else {
-      console.log('result for default domain - ${pluginOptions.defaultDomain}');
-      const subdomain = "${pluginOptions.defaultDomain}".split("/")[2].split(".")[0];
-      const tids = ${JSON.stringify(tidsByLocale)};
-      window.referrer = tids.filter(locale => locale.subdomain === subdomain)[0];
+      // set the rferrer based on the path
+      window.referrer = tids.filter(locale => locale.locale === pathname)[0];
     }
+    if (window.referrer == "") window.referrer = tids[0];
+    console.log(window.referrer);
   `;
 
   const getGtagLoad = () => `
